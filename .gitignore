@@ -1,0 +1,31 @@
+# Python-generated files
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+build/
+dist/
+wheels/
+
+# Virtual environments
+.venv/
+venv/
+
+# Environment variables
+.env
+
+# IDE settings
+.vscode/
+.idea/
+
+# Cache
+.cache/
+.ruff_cache/
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Temp / test files
+temp_*.py
+test.py
