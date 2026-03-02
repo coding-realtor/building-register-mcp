@@ -38,7 +38,7 @@ Provides **12 tools** for querying building register (건축물대장) informati
 1. **Clone this repository**
 
 ```bash
-git clone https://github.com/Koomook/building-register-mcp.git
+git clone https://github.com/coding-realtor/building-register-mcp.git
 cd building-register-mcp
 ```
 
@@ -125,7 +125,7 @@ Claude에게 건축물대장 정보를 물어보세요 — 공공데이터포털
 1. **레포지토리 클론**
 
 ```bash
-git clone https://github.com/Koomook/building-register-mcp.git
+git clone https://github.com/coding-realtor/building-register-mcp.git
 cd building-register-mcp
 ```
 
