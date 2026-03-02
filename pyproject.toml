@@ -1,0 +1,42 @@
+[project]
+name = "data-go-mcp-building-register"
+version = "0.1.0"
+description = "MCP server for 건축HUB 건축물대장정보 API from data.go.kr"
+readme = "README.md"
+authors = [
+    { name = "Koomook" }
+]
+requires-python = ">=3.10"
+license = {text = "Apache-2.0"}
+keywords = ["mcp", "korea", "data.go.kr", "building-register", "건축물대장"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+]
+dependencies = [
+    "httpx>=0.28.1",
+    "mcp[cli]>=1.13.0",
+    "pydantic>=2.11.7",
+    "python-dotenv>=1.1.1",
+]
+
+[project.urls]
+Homepage = "https://github.com/Koomook/building-register-mcp"
+Repository = "https://github.com/Koomook/building-register-mcp"
+Issues = "https://github.com/Koomook/building-register-mcp/issues"
+
+[project.scripts]
+data-go-mcp-building-register = "data_go_mcp.building_register.server:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["data_go_mcp"]
