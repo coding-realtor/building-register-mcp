@@ -209,7 +209,6 @@ async def get_building_expos_pubuse_area_info(
     plat_gb_cd: Optional[str] = None,
     bun: Optional[str] = None,
     ji: Optional[str] = None,
-    mgm_bldrgst_pk: Optional[str] = None,
     dong_nm: Optional[str] = None,
     ho_nm: Optional[str] = None,
     page_no: int = 1,
@@ -217,6 +216,12 @@ async def get_building_expos_pubuse_area_info(
 ) -> Dict[str, Any]:
     """
     건축물대장 전유공용면적을 조회합니다.
+
+    🚨 [중요/MCP 지침] 🚨
+    1. 이 API는 mgmBldrgstPk를 공식 파라미터로 지원하지 않습니다.
+       반드시 주소(sigungu_cd + bjdong_cd + bun + ji) + dongNm + hoNm 으로 조회하세요.
+    2. hoNm은 "401호" 또는 "401" 모두 가능합니다 (내부에서 자동 정규화).
+    3. dongNm은 "118동" 형식 그대로 입력하세요.
 
     전유/공용면적의 층구분, 층번호, 전유/공용구분, 구조, 용도 등의 정보를 제공합니다.
 
@@ -226,9 +231,8 @@ async def get_building_expos_pubuse_area_info(
         plat_gb_cd: 대지구분코드 (0: 대지, 1: 산, 2: 블록)
         bun: 번 (4자리, 예: 0001)
         ji: 지 (4자리, 예: 0000)
-        mgm_bldrgst_pk: 관리건축물대장PK
-        dong_nm: 동명칭
-        ho_nm: 호명칭
+        dong_nm: 동명칭 (예: "118동")
+        ho_nm: 호명칭 (예: "401" 또는 "401호")
         page_no: 페이지 번호 (기본값: 1)
         num_of_rows: 한 페이지 결과 수 (기본값: 100)
 
@@ -247,7 +251,6 @@ async def get_building_expos_pubuse_area_info(
                 plat_gb_cd=plat_gb_cd,
                 bun=bun,
                 ji=ji,
-                mgm_bldrgst_pk=mgm_bldrgst_pk,
                 dong_nm=dong_nm,
                 ho_nm=ho_nm,
                 page_no=page_no,
@@ -601,6 +604,7 @@ async def smart_building_lookup(
       "어느 동/호의 상세정보를 조회할까요?" 라고 사용자에게 물어보세요.
       사용자가 동/호를 지정하면 get_building_expos_info (전유부) 또는
       get_building_expos_pubuse_area_info (전유공용면적) 를 해당 동/호로 호출하세요.
+      ⚠️ 전유공용면적은 mgm_bldrgst_pk를 지원하지 않으므로 반드시 주소+동+호로 조회하세요.
 
     Args:
         sigungu_cd: 시군구코드 (5자리, search_bjdong_code로 조회)
