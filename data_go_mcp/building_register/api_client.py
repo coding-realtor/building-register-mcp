@@ -152,23 +152,98 @@ class BuildingRegisterClient:
         page_no: int = 1,
         num_of_rows: int = 100,
     ) -> Dict[str, Any]:
-        """건축물대장 전유공용면적 조회."""
+        """건축물대장 전유공용면적 조회.
+
+        mgmBldrgstPk는 이 API의 공식 파라미터가 아니므로 사용하지 않음.
+        dongNm/hoNm은 서버사이드 필터링 지원. hoNm은 접미사 '호'를 제거하여 전달.
+        서버 결과가 없으면 클라이언트사이드 필터링으로 폴백.
+        """
+        normalized_dong = dong_nm.strip() if dong_nm else None
+        normalized_ho = ho_nm.strip().rstrip("호") if ho_nm else None
+
         params = {
             "sigunguCd": sigungu_cd,
             "bjdongCd": bjdong_cd,
             "platGbCd": plat_gb_cd,
             "bun": bun,
             "ji": ji,
-            "mgmBldrgstPk": mgm_bldrgst_pk,
-            "dongNm": dong_nm,
-            "hoNm": ho_nm,
+            "dongNm": normalized_dong,
+            "hoNm": normalized_ho,
             "pageNo": page_no,
             "numOfRows": num_of_rows,
         }
         url = self._build_url("getBrExposPubuseAreaInfo", params)
         response = await self.client.get(url)
         response.raise_for_status()
-        return self._parse_response(response.text, page_no, num_of_rows)
+        result = self._parse_response(response.text, page_no, num_of_rows)
+
+        if result["items"] or not (dong_nm or ho_nm):
+            return result
+
+        has_address = sigungu_cd and bjdong_cd
+        if not has_address:
+            return result
+
+        fetch_size = 100
+        current_page = 1
+        matched = []
+        total_count = 0
+
+        while True:
+            fallback_params = {
+                "sigunguCd": sigungu_cd,
+                "bjdongCd": bjdong_cd,
+                "platGbCd": plat_gb_cd,
+                "bun": bun,
+                "ji": ji,
+                "pageNo": current_page,
+                "numOfRows": fetch_size,
+            }
+            url = self._build_url("getBrExposPubuseAreaInfo", fallback_params)
+            response = await self.client.get(url)
+            response.raise_for_status()
+            page_result = self._parse_response(response.text, current_page, fetch_size)
+
+            if current_page == 1:
+                total_count = page_result["total_count"]
+
+            items = page_result["items"]
+            if not items:
+                break
+
+            for item in items:
+                item_dong = item.get("dongNm", "").strip()
+                item_ho = item.get("hoNm", "").strip()
+                search_dong = dong_nm.strip().rstrip("동") if dong_nm else None
+                search_ho = ho_nm.strip().rstrip("호") if ho_nm else None
+                dong_match = (
+                    not dong_nm
+                    or item_dong == dong_nm.strip()
+                    or item_dong.rstrip("동") == search_dong
+                    or item_dong == search_dong
+                )
+                ho_match = (
+                    not ho_nm
+                    or item_ho == ho_nm.strip()
+                    or item_ho.rstrip("호") == search_ho
+                    or item_ho == search_ho
+                )
+                if dong_match and ho_match:
+                    matched.append(item)
+
+            fetched_so_far = current_page * fetch_size
+            if fetched_so_far >= total_count:
+                break
+
+            current_page += 1
+
+        return {
+            "items": matched,
+            "page_no": page_no,
+            "num_of_rows": num_of_rows,
+            "total_count": len(matched),
+            "note": f"API 서버 필터 매칭 실패로 전체 {total_count}건 중 클라이언트 필터링 적용",
+        }
 
     async def get_hsprc_info(
         self,
